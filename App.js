@@ -81,7 +81,7 @@ const App = () => {
   
       if (Platform.OS === 'android') {
         if (marker) {
-          marker.animateMarkerToCoordinate(newCoordinate, 15000);
+          marker.animateMarkerToCoordinate(newCoordinate, 3000);
         }
       } else {
         location.timing(newCoordinate).start();
