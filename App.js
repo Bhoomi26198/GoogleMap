@@ -6,6 +6,7 @@ import MapViewDirections from 'react-native-maps-directions';
 
 const App = () => {
   const [location, setLocation] = useState(null);
+  const [marker, setMarker] = useState(null)
   const [coordinates] = useState([
     {
       latitude: 23.0225,
@@ -40,7 +41,6 @@ const App = () => {
   };
 
   const getLocation = () => {
-   
     const result = requestLocationPermission();
     result.then(res => {
       if (res) {
@@ -61,45 +61,38 @@ const App = () => {
     setLocation({...location, distance: d, time: t})
   }
 
-//   const calculatePreciseDistance = () => {
-//       let l1 = {
-//         latitude: location?.coords?.latitude, 
-//         longitude: location?.coords?.longitude,
-//       }
-//       let l2 ={
-//           latitude: privousLocation?.coords?.latitude, 
-//           longitude: privousLocation?.coords?.longitude,
-//       }
-//       var angleDeg = Math.atan2(l2.longitude - l1.longitude, l2.latitude - l1.latitude) * 180 / Math.PI;
-//       console.log("action angleDeg",angleDeg,l1,l2);
-//       console.log("action location?.coords?.latitude", location?.coords?.heading,privousLocation?.coords?.heading );
-//     if(l2?.latitude !== undefined && l1?.latitude !== undefined){
-//       let ang = angleDeg;
-//       if(ang != 0){
-//         return location?.coords?.heading.toString()
-//       }else{
-//         return '180'
-//       }
-//     }else{
-//       return '180'
-//     }
-// };
-
-// let locationAvg = calculatePreciseDistance().toString();
-
     useEffect(() => {
       getLocation();
     }, []);
 
     console.log("action location",location);
 
+    useEffect(() => {
+      animateMarker();
+    }, [location]);
+  
+    const animateMarker = () => { // drive smoothly 
+      const newCoordinate = {
+        latitude: location?.coords?.latitude,
+        longitude: location?.coords?.longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      };
+  
+      if (Platform.OS === 'android') {
+        if (marker) {
+          marker.animateMarkerToCoordinate(newCoordinate, 15000);
+        }
+      } else {
+        location.timing(newCoordinate).start();
+      }
+    };
+
   return (
     <View style={styles.container}>
-      
       <>
         {
           location?.coords &&
-
             <MapView
               ref={mapRef}
               style={styles.maps}
@@ -111,8 +104,11 @@ const App = () => {
               }}
               >
               <Marker.Animated
-              ref={markerRef}
-               coordinate={{latitude:location?.coords?.latitude,longitude: location?.coords?.longitude}}
+               key={location.DeviceID}
+               ref={marker =>{
+                setMarker(marker);
+               }}
+               coordinate={{latitude:location?.coords?.latitude, longitude: location?.coords?.longitude}}
                anchor={{x: 0.5, y: 0.5}}
                flat={true}
                >
@@ -142,7 +138,6 @@ const App = () => {
                     left: 30,
                     top:100
                   }
-
                 })
               }}
               />
